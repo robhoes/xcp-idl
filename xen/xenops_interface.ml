@@ -395,6 +395,14 @@ module Metadata = struct
     ; domains: string option [@default None]
   }
   [@@deriving rpcty]
+
+  type device_id =
+    | Vbd of Vbd.id
+    | Vif of Vif.id
+    | Pci of Pci.id
+    | Vgpu of Vgpu.id
+    | Vusb of Vusb.id
+  [@@deriving rpcty]
 end
 
 module Task = struct
@@ -790,8 +798,9 @@ module XenopsAPI (R : RPC) = struct
 
     let resume =
       let disk_p = Param.mk ~name:"suspend_vdi" disk in
+      let devices_p = Param.mk ~name:"devices" (TypeCombinators.list Metadata.device_id) in
       declare "VM.resume" []
-        (debug_info_p @-> vm_id_p @-> disk_p @-> returning task_id_p err)
+        (debug_info_p @-> vm_id_p @-> disk_p @-> devices_p @-> returning task_id_p err)
 
     let s3suspend =
       declare "VM.s3suspend" []
